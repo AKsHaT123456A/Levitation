@@ -32,12 +32,18 @@ const BasicDetails: React.FC = () => {
   };
 
   const steps = [
-    <BasicDetailsStep onNext={handleNext} />,
+    <BasicDetailsStep
+  onPrevious={handlePrevious}
+  onNext={handleNext}
+  onCancel={handleCancel}
+/>
+,
     <FileUploadStep onPrevious={handlePrevious} onNext={handleNext} onCancel={handleCancel} />,
     <MultiSelectStep
       onPrevious={handlePrevious}
       onNext={handleSubmit}
       onCancel={handleCancel}
+      onSubmit={handleSubmit}
     />,
   ];
 

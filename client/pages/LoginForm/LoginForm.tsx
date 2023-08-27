@@ -1,5 +1,5 @@
 import React from "react";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useForm } from "react-hook-form";
 import InputField from "../../src/components/Input/InputComponent";
 import Checkbox from "../../src/components/Input/CheckBoxComponent";
@@ -26,8 +26,23 @@ const LoginForm = () => {
       localStorage.setItem("token", response.data.token);
       navigate("/details");
     } catch (error) {
-      const errMessage = error.response.data.message;
-      setMessage(errMessage);
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<{ message: string }>;
+        if (
+          axiosError.response &&
+          axiosError.response.data &&
+          axiosError.response.data.message
+          
+        ) {
+          const errMessage = axiosError.response.data.message;
+          setMessage(errMessage);
+          console.error(errMessage);
+        } else {
+          console.error("An error occurred:", axiosError.message);
+        }
+      } else {
+        console.error("An error occurred:", error);
+      }
     }
   });
   

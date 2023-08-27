@@ -39,7 +39,6 @@ const FileUploadStep: React.FC<FileUploadStepProps> = ({
     });
 
     try {
-      const id = localStorage.getItem("id");
       const token = localStorage.getItem("token");
 
       const response = await axios.post(

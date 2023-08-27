@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import Select from "react-select";
-import { setStep3Data } from "../../store/userSlice";
-import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
+import Select, { MultiValue } from "react-select";
+import { useSelector } from "react-redux";
+import axios, { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
+import { RootState } from "../../store/store";
 
 interface MultiSelectStepProps {
   onPrevious: () => void;
@@ -12,28 +12,34 @@ interface MultiSelectStepProps {
   onSubmit: () => void;
 }
 
+interface Option {
+  value: string;
+  label: string;
+}
+
 const MultiSelectStep: React.FC<MultiSelectStepProps> = ({
   onPrevious,
   onCancel,
 }) => {
   const navigate = useNavigate();
 
-  const step1Data = useSelector((state) => state.form.step1Data);
-  const step2Data = useSelector((state) => state.form.step2Data);
-  console.log(step1Data, step2Data);
-  
+  const step1Data = useSelector((state: RootState) => state.form.step1Data);
+  const step2Data = useSelector((state: RootState) => state.form.step2Data);
+
   const [selectedOptions, setSelectedOptions] = useState<
     { value: string; label: string }[]
   >([]);
-  const options = [
+  const options: Option[] = [
     { value: "Option 1", label: "Option 1" },
     { value: "Option 2", label: "Option 2" },
     { value: "Option 3", label: "Option 3" },
     { value: "Option 4", label: "Option 4" },
   ];
 
-  const handleOptionChange = (selectedValues: any) => {
-    setSelectedOptions(selectedValues);
+  const handleOptionChange = (
+    selectedValues: MultiValue<{ value: string; label: string }>
+  ) => {
+    setSelectedOptions([...selectedValues]);
   };
 
   const handleFormSubmit = async () => {
@@ -46,9 +52,8 @@ const MultiSelectStep: React.FC<MultiSelectStepProps> = ({
       };
       const id = localStorage.getItem("id");
       const token = localStorage.getItem("token");
-  console.log(token);
-  
-      const response = await axios.post(
+
+       await axios.post(
         `http://localhost:3000/api/v1/details/${id}`,
         formData,
         {
@@ -57,16 +62,26 @@ const MultiSelectStep: React.FC<MultiSelectStepProps> = ({
           },
         }
       );
-  
+
       navigate("/user");
-      console.log(response);
     } catch (error) {
-      const errMessage = error.response.data.message;
-      console.error(errMessage);
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<{ message: string }>;
+        if (
+          axiosError.response &&
+          axiosError.response.data &&
+          axiosError.response.data.message
+        ) {
+          const errMessage = axiosError.response.data.message;
+          console.error(errMessage);
+        } else {
+          console.error("An error occurred:", axiosError.message);
+        }
+      } else {
+        console.error("An error occurred:", error);
+      }
     }
   };
-  
-  
 
   return (
     <div className="flex flex-col items-center justify-center h-full">
